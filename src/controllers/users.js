@@ -1,5 +1,5 @@
 import {pool} from '../database.js'
-//import {encrypt, compare} from '../helpers/handleBcrypt.js'
+
 
 export const getItems = async (req, res) => {
     // Lógica para obtener todos los elementos
@@ -28,24 +28,6 @@ export const getItem = async (req, res) => {
         res.status(500).json({ message: 'Error al obtener el usuario' });
     }
 };
-
-
-export const createItem = async(req, res) => {
-    // Lógica para crear un nuevo elemento
-
-    try {
-        console.log('Datos recibidos en req.body:', req.body);
-        const { name, surname, dni, description, email, password } = req.body;
-        const [result] = await pool.query('INSERT INTO users (name, surname, dni, description, email, password) VALUES(?, ?, ?, ?, ?, ?)', [name, surname, dni, description, email, password]);
-        res.json({ id: result.insertId, name, email });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Error al crear el usuario' });
-    }
-};
-
-
-
 
 export const updateItem = async(req, res) => {
     // Lógica para actualizar un elemento por id
@@ -80,4 +62,4 @@ export const deleteItem = async (req, res) => {
     }
 };
 
-export default { getItems, getItem, createItem, updateItem, deleteItem };
+export default { getItems, getItem, updateItem, deleteItem };

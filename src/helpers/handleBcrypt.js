@@ -1,13 +1,12 @@
-const bcrypt = require('bcryptjs')
+import bcrypt from 'bcryptjs';
 
-const encrypt = async (textPplain) => {
-    const hash = await bcrypt.hash(textPplain, 10)
-    return hash
-}
+const encrypt = async (textPlain) => {
+    const hash = await bcrypt.hash(textPlain, 12);
+    return hash;
+};
 
-const compare = async (paswordPlain, hashPasword) => {
-    return await bcrypt.compare(paswordPlain, hashPasword)
-}
+const compare = async (passwordPlain, hashPassword) => {
+    return await bcrypt.compare(passwordPlain, hashPassword);
+};
 
-
-export default {encrypt, compare}
+export { encrypt, compare };
