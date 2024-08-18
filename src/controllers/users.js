@@ -4,7 +4,7 @@ import {pool} from '../database.js'
 export const getItems = async (req, res) => {
     // Lógica para obtener todos los elementos
     try {
-        const [result] = await pool.query('SELECT * FROM users');
+        const [result] = await pool.query('SELECT id,name,surname,dni,description,email FROM users');
         res.json(result);
     } catch (error) {
         console.error(error);
@@ -16,7 +16,7 @@ export const getItem = async (req, res) => {
     // Lógica para obtener un elemento
     try {
         const { id } = req.params;
-        const [result] = await pool.query('SELECT * FROM users WHERE id = ?', [id]);
+        const [result] = await pool.query('SELECT id,name,surname,dni,description,email FROM users WHERE id = ?', [id]);
 
         if (result.length === 0) {
             return res.status(404).json({ message: 'Usuario no encontrado' });
