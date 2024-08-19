@@ -1,4 +1,5 @@
 import {pool} from '../database.js'
+import {encrypt, compare} from '../helpers/handleBcrypt.js'
 
 
 export const getItems = async (req, res) => {
@@ -16,7 +17,7 @@ export const getItem = async (req, res) => {
     // Lógica para obtener un elemento
     try {
         const { id } = req.params;
-        const [result] = await pool.query('SELECT id,name,surname,dni,description,email FROM users WHERE id = ?', [id]);
+        const [result] = await pool.query('SELECT id,name,surname,dni,description,email,role_id FROM users WHERE id = ?', [id]);
 
         if (result.length === 0) {
             return res.status(404).json({ message: 'Usuario no encontrado' });
@@ -35,8 +36,9 @@ export const updateItem = async(req, res) => {
     try {
         console.log('Datos recibidos en req.body:', req.body);
         const { name, surname, dni, description, email, password } = req.body;
+        const encryptedPassword = await encrypt(password);
         const { id } = req.params;
-        const [result] = await pool.query('UPDATE users SET name=?, surname=?, dni=?, description=?, email=?, password=? WHERE id=?', [name, surname, dni, description, email, password, id]);
+        const [result] = await pool.query('UPDATE users SET name=?, surname=?, dni=?, description=?, email=?, password=? WHERE id=?', [name, surname, dni, description, email, encryptedPassword, id]);
         res.json({ id: result.insertId, name, email });
     } catch (error) {
         console.error(error);
