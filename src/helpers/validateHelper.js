@@ -8,5 +8,13 @@ export const validateResult = (req, res, next) => {
         res.status(403)
         res.send({errors: err.array()})
     }
-}
-export default {validateResult};
+};
+
+export const verificarLargo = (value, {req})=>{
+    if(value.length>256 ){
+        throw new Error('error al ingresar el : sobrepasa el limite de caracteres');
+    };
+    return true;
+};
+
+export default {validateResult, verificarLargo};
