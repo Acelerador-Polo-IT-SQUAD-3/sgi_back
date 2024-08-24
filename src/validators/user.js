@@ -33,7 +33,12 @@ export const validateUpdate = [
 
     check('email')
         .exists()
-        .custom(verificarLargo)
+        .custom((value, {req})=>{
+            if(value.length>51 ){
+                throw new Error('error al ingresar el: sobrepasa el limite de caracteres')
+            }
+            else{return true}
+        })
         .isEmail()
         .not()
         .isEmpty(),
@@ -44,7 +49,7 @@ export const validateUpdate = [
         .not()
         .isEmpty(),
 
-    check('role_id')
+    /*check('role_id')
         .exists()
         .isNumeric()
         .custom((value, {req})=>{
@@ -54,7 +59,7 @@ export const validateUpdate = [
             else{return true}
         })
         .not()
-        .isEmpty(),
+        .isEmpty(),*/
 
     (req, res, next) =>{
         validateResult(req, res, next)        

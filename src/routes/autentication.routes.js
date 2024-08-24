@@ -5,6 +5,6 @@ import {validateCreate} from '../validators/autentication.js'
 
 
 router.post(`/`, validateCreate, createItem)
-router.get(`/login`, login);
+router.post(`/login`, login);
 
 export default router
