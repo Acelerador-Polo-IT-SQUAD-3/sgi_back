@@ -5,6 +5,7 @@ import autenticationRoutes from './routes/autentication.routes.js';
 
 
 const app = express();
+const PORT = process.env.PORT || 3000;
 
 // Middleware para parsear JSON debe ir antes de las rutas
 app.use(express.json());
@@ -13,6 +14,6 @@ app.use(indexRoutes);
 app.use('/user', userRoutes);
 app.use('/auth', autenticationRoutes);
 
-app.listen(3000, () => {
-    console.log('Server running on port 3000');
+app.listen(PORT, () => {
+    console.log('Server running on port '+ PORT);
 });
