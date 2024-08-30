@@ -14,8 +14,6 @@ app.use('/user', userRoutes);
 app.use('/auth', autenticationRoutes);
 app.use('/memb', membersRoutes);
 
-
-
 app.listen(PORT, () => {
-    console.log('Server running on port 3000');
+    console.log('Server running on port '+ PORT);
 });
