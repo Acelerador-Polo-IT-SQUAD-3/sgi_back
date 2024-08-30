@@ -1,6 +1,8 @@
 import {check} from 'express-validator'
 import {validateResult, verificarLargo} from '../helpers/validateHelper.js'
-export const validateUpdate = [
+
+
+export const validateUser= [
     check('name')
         .exists()
         .custom(verificarLargo)
@@ -67,4 +69,4 @@ export const validateUpdate = [
 ]
 
 
-export default {validateUpdate};
+export default {validateUser};

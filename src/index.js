@@ -1,6 +1,7 @@
 import express from 'express';
 import userRoutes from './routes/user.routes.js';
 import autenticationRoutes from './routes/autentication.routes.js';
+import membersRoutes from './routes/members.routes.js';
 
 
 const app = express();
@@ -11,6 +12,7 @@ app.use(express.json());
 
 app.use('/user', userRoutes);
 app.use('/auth', autenticationRoutes);
+app.use('/memb', membersRoutes);
 
 app.listen(PORT, () => {
     console.log('Server running on port '+ PORT);
