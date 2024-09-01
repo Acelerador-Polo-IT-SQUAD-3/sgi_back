@@ -9,8 +9,8 @@ export const createItem = async(req, res) => {
         console.log('Datos recibidos en req.body:', req.body);
         const { name, surname, dni, description, email, password, role_id } = req.body;
         const encryptedPassword = await encrypt(password);
-        console.log('password:', encryptedPassword);
-        const [result] = await pool.query('INSERT INTO users (name, surname, dni, description, email, password,role_id) VALUES(?, ?, ?, ?, ?, ?, ?)', [name, surname, dni, description, email, encryptedPassword, role_id]);
+        const fecha = new Date();
+        const [result] = await pool.query('INSERT INTO users (name, surname, dni, description, email, password,role_id, created_at, updated_at) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)', [name, surname, dni, description, email, encryptedPassword, role_id, fecha, fecha]);
         res.json({ id: result.insertId, name, email });
     } catch (error) {
         console.error(error);

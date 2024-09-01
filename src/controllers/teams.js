@@ -1,15 +1,18 @@
 import {pool} from '../database.js'
-import {encrypt, compare} from '../helpers/handleBcrypt.js'
 
+export const createItem = async(req, res) => {
+    // Lógica para crear un nuevo elemento
 
-export const getItems = async (req, res) => {
-    // Lógica para obtener todos los elementos
     try {
-        const [result] = await pool.query('SELECT id,name,surname,dni,description,email,role_id FROM users');
-        res.json(result);
+        console.log('Datos recibidos en req.body:', req.body);
+        const { name, surname, dni, description, email, password, role_id } = req.body;
+        const encryptedPassword = await encrypt(password);
+        console.log('password:', encryptedPassword);
+        const [result] = await pool.query('INSERT INTO users (name, surname, dni, description, email, password,role_id) VALUES(?, ?, ?, ?, ?, ?, ?)', [name, surname, dni, description, email, encryptedPassword, role_id]);
+        res.json({ id: result.insertId, name, email });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Error al obtener los usuarios' });
+        res.status(500).json({ message: 'Error al crear el usuario' });
     }
 };
 
@@ -30,6 +33,18 @@ export const getItem = async (req, res) => {
     }
 };
 
+
+export const getItems = async (req, res) => {
+    // Lógica para obtener todos los elementos
+    try {
+        const [result] = await pool.query('SELECT id,name,surname,dni,description,email,role_id FROM users');
+        res.json(result);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error al obtener los usuarios' });
+    }
+};
+
 export const updateItem = async(req, res) => {
     // Lógica para actualizar un elemento por id
 
@@ -38,12 +53,11 @@ export const updateItem = async(req, res) => {
         const { name, surname, dni, description, email, password } = req.body;
         const encryptedPassword = await encrypt(password);
         const { id } = req.params;
-        const fecha = new Date();
-        const [result] = await pool.query('UPDATE users SET name=?, surname=?, dni=?, description=?, email=?, password=?, updated_at=? WHERE id=?', [name, surname, dni, description, email, encryptedPassword, fecha, id]);
+        const [result] = await pool.query('UPDATE users SET name=?, surname=?, dni=?, description=?, email=?, password=? WHERE id=?', [name, surname, dni, description, email, encryptedPassword, id]);
         res.json({ id: result.insertId , id, name, email });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Error al actualizar el usuario' });
+        res.status(500).json({ message: 'Error al crear el usuario' });
     }
 
 };
@@ -65,4 +79,4 @@ export const deleteItem = async (req, res) => {
     }
 };
 
-export default { getItems, getItem, updateItem, deleteItem };
+export default { createItem, getItems, getItem, updateItem, deleteItem };
