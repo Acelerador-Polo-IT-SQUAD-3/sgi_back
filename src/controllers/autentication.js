@@ -23,7 +23,7 @@ export const login = async (req, res) => {
     // Lógica para comparar un elemento
     try {
         const { email, password } = req.body;
-        const [result] = await pool.query('SELECT id,name,surname,dni,description,email FROM users WHERE email = ?', [email]);
+        const [result] = await pool.query('SELECT id,name,surname,dni,description,email,role_id FROM users WHERE email = ?', [email]);
 
         if (result.length === 0) {
             console.log("Usuario no encontrado");
