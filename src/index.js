@@ -21,7 +21,13 @@ app.use('/user', userRoutes);
 app.use('/auth', autenticationRoutes);
 app.use('/memb', membersRoutes);
 
+<<<<<<< HEAD
 
 app.listen(PORT, () => {
     console.log('Server running on port '+ PORT);
 });
+=======
+app.listen(PORT, () => {
+    console.log('Server running on port '+ PORT);
+});
+>>>>>>> da9ab5ad54a5fe78aea84b40632a875727befa31
