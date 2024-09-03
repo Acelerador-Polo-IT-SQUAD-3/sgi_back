@@ -2,6 +2,9 @@ import express from 'express';
 import userRoutes from './routes/user.routes.js';
 import autenticationRoutes from './routes/autentication.routes.js';
 import membersRoutes from './routes/members.routes.js';
+import Programs from './routes/programs.routes.js';
+import Roles from './routes/roles.routes.js';
+import technologies from './routes/technologies.routes.js';
 import cors from 'cors';
 
 const app = express();
@@ -20,6 +23,9 @@ app.use(cors({
 app.use('/user', userRoutes);
 app.use('/auth', autenticationRoutes);
 app.use('/memb', membersRoutes);
+app.use('/prog', Programs);
+app.use('/roles', Roles);
+app.use('/tech', technologies);
 
 
 app.listen(PORT, () => {
