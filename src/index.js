@@ -27,7 +27,7 @@ app.use('/memb', membersRoutes);
 app.use('/prog', ProgramsRoutes);
 app.use('/roles', RolesRoutes);
 app.use('/tech', technologiesRoutes);
-app.use('/menu', menusRoutes);
+app.use('/menus', menusRoutes);
 
 
 app.listen(PORT, () => {
