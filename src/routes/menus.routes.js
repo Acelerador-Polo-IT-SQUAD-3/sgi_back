@@ -5,7 +5,7 @@ import {getItems } from'../controllers/menus.js';
 
 
 
-router.get(`/`, getItems)
+router.get(`/:role_id`, getItems);
 
 
 

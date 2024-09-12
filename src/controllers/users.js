@@ -76,11 +76,11 @@ export const updateItem = async(req, res) => {
 
     try {
         console.log('Datos recibidos en req.body:', req.body);
-        const { name, surname, dni, description, email, password } = req.body;
-        const encryptedPassword = await encrypt(password);
+        const { name, surname, dni, description, email } = req.body;
+
         const { id } = req.params;
         const fecha = new Date();
-        const [result] = await pool.query('UPDATE users SET name=?, surname=?, dni=?, description=?, email=?, password=?, updated_at=? WHERE id=?', [name, surname, dni, description, email, encryptedPassword, fecha, id]);
+        const [result] = await pool.query('UPDATE users SET name=?, surname=?, dni=?, description=?, email=?,  updated_at=? WHERE id=?', [name, surname, dni, description, email, fecha, id]);
         res.json({ id: result.insertId , id, name, email });
     } catch (error) {
         console.error(error);
