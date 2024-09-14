@@ -45,11 +45,11 @@ export const validateUser= [
         .not()
         .isEmpty(),
 
-    check('password')
+    /*check('password')
         .exists()
         .custom(verificarLargo)
         .not()
-        .isEmpty(),
+        .isEmpty(),*/
 
     /*check('role_id')
         .exists()
