@@ -5,6 +5,7 @@ import {encrypt, compare} from '../helpers/handleBcrypt.js'
 export const getItems = async (req, res) => {
     try {
         // usa role_id, program_id y technology_id para filtrar si se envian nulos se selecciona todo
+        //datos que se envian por el bodi
         const { role_id, program_id, technology_id } = req.body;
 
         if (role_id == null && program_id == null && technology_id == null) {
@@ -72,7 +73,8 @@ export const getItem = async (req, res) => {
 };
 
 export const updateItem = async(req, res) => {
-    // Lógica para actualizar un elemento por id
+    // Lógica para actualizar un elemento por id esto se envia por url
+    //requiere nombre, apellido, dni, descripcion, email datos que se envian por el bodi
 
     try {
         console.log('Datos recibidos en req.body:', req.body);
@@ -89,8 +91,9 @@ export const updateItem = async(req, res) => {
 
 };
 
+
 export const deleteItem = async (req, res) => {
-    // Lógica para eliminar un elemento por id
+    // Lógica para eliminar un elemento por id esto se envia por url
     try {
         const { id } = req.params;
         const fecha = new Date();
