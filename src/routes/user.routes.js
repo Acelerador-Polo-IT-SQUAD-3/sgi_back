@@ -14,6 +14,6 @@ router.get(`/:id`, getItem);
 
 router.patch(`/:id`, validateUser, updateItem)
 
-router.delete(`/:id`, deleteItem)
+router.patch(`/del/:id`, deleteItem)
 
 export default router
