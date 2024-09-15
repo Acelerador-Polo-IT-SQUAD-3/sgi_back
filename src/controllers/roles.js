@@ -15,7 +15,7 @@ export const getItems = async (req, res) => {
 
 export const getItem = async (req, res) => {
     // Lógica para obtener un elemento
-    //requiere id del rol
+    //requiere id del rol esto se envia por url
     //devuelve un rol
     try {
         const { id } = req.params;

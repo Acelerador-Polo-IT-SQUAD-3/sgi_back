@@ -15,7 +15,7 @@ export const getItems = async (req, res) => {
 
 export const getItem = async (req, res) => {
     // Lógica para obtener un elemento
-    //requiere id de la tecnologia
+    //requiere id de la tecnologia esto se envia por url
     //devuelve una tecnologia
     try {
         const { id } = req.params;

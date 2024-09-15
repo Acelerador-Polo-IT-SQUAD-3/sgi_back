@@ -4,6 +4,7 @@ import {encrypt, compare} from '../helpers/handleBcrypt.js'
 
 export const createItem = async(req, res) => {
     // Lógica para crear un nuevo elemento
+    //requiere nombre, apellido, dni, descripcion, email, id de rol y contraseña datos que se envian por el bodi
 
     try {
         console.log('Datos recibidos en req.body:', req.body);
@@ -21,6 +22,7 @@ export const createItem = async(req, res) => {
 
 export const login = async (req, res) => {
     // Lógica para comparar un elemento
+    //requiere email y contraseña datos que se envian por el bodi
     try {
         const { email, password } = req.body;
         const [result] = await pool.query('SELECT id,name,surname,dni,description,email,role_id FROM users WHERE email = ?', [email]);
