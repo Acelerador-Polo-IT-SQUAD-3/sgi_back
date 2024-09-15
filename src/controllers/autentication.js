@@ -1,6 +1,6 @@
 import {pool} from '../database.js'
 import {encrypt, compare} from '../helpers/handleBcrypt.js'
-
+import {sendEmail} from './sendEmail.js'
 
 export const createItem = async(req, res) => {
     // Lógica para crear un nuevo elemento
@@ -11,6 +11,9 @@ export const createItem = async(req, res) => {
         const encryptedPassword = await encrypt(password);
         const fecha = new Date();
         const [result] = await pool.query('INSERT INTO users (name, surname, dni, description, email, password,role_id, created_at, updated_at) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)', [name, surname, dni, description, email, encryptedPassword, role_id, fecha, fecha]);
+
+        await sendEmail(email, 'Bienvenido a Nuestro Sitio', 'register');
+
         res.json({ id: result.insertId, name, email });
     } catch (error) {
         console.error(error);
