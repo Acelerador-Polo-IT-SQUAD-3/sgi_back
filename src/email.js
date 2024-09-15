@@ -104,4 +104,50 @@ const transporter = nodemailer.createTransport({
     </table>
 </td>`;
 
-export default { transporter, templateRegister, templateApply }
+const templatePersonalized =(templateData)=>`<td class="esd-structure es-p40t es-p15b es-p20r es-p20l" align="left">
+    <table cellpadding="0" cellspacing="0" width="100%">
+        <tbody>
+            <tr>
+                <td width="281" class="esd-container-frame" align="center" valign="top">
+                    <table cellpadding="0" cellspacing="0" width="100%">
+                        <tbody>
+                            <tr>
+                                <td align="left" class="esd-block-text">
+                                    <h1 style="text-align: center;"><b>¡Tienes un mensaje desarrollador en PoloIT!</b></h1>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td align="center" class="esd-block-text es-m-txt-c es-p15t">
+                                    <p>${templateData}</p>
+                                    <p><br></p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td align="center" class="esd-block-social" style="font-size:0">
+                                    <table cellpadding="0" cellspacing="0" class="es-table-not-adapt es-social" dir="ltr">
+                                        <tbody>
+                                            <tr>
+                                                <td align="center" valign="top" class="es-p10r"><a target="_blank" href><img src="https://stripo.email/static/assets/img/social-icons/circle-colored/x-circle-colored.png" alt="X" title="X" width="32" height="32"></a></td>
+                                                <td align="center" valign="top" class="es-p10r"><a target="_blank" href><img src="https://stripo.email/static/assets/img/social-icons/circle-colored/facebook-circle-colored.png" alt="Fb" title="Facebook" width="32" height="32"></a></td>
+                                                <td align="center" valign="top" class="es-p10r"><a target="_blank" href><img src="https://stripo.email/static/assets/img/social-icons/circle-colored/youtube-circle-colored.png" alt="Yt" title="YouTube" width="32" height="32"></a></td>
+                                                <td align="center" valign="top"><a target="_blank" href><img src="https://stripo.email/static/assets/img/social-icons/circle-colored/vk-circle-colored.png" alt="VK" title="Vkontakte" width="32" height="32"></a></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td align="left" class="esd-block-text">
+                                    <p><br></p>
+                                    <p>¡Esperamos verte pronto!</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</td>`;
+
+export default { transporter, templateRegister, templateApply, templatePersonalized }

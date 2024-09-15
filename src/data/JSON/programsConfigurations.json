@@ -1,0 +1,85 @@
+{
+    "configuracion": [
+      {
+        "idProgram1": {
+          "tamanoMaximoIntegrantes": 7,
+          "cantidadMaximaEquipos": 18,
+          "perfilesPorEquipoC#": [
+            {
+              "rol": "Desarrollador BackEnd",
+              "mainTecnologias": ["c#", ".Net"],
+              "cantidad": 3
+            },
+            {
+              "rol": "Analista QA",
+              "mainTecnologias": ["c#", ".Net"],
+              "cantidad": 2
+            },
+            {
+              "rol": "Diseñador",
+              "mainTecnologias": ["figma"],
+              "cantidad": 2
+            }
+          ],
+          "perfilesPorEquipoNodeJs": [
+            {
+              "rol": "Desarrollador BackEnd",
+              "mainTecnologias": ["nodejs", "typeScript"],
+              "cantidad": 3
+            },
+            {
+              "rol": "Analista QA",
+              "mainTecnologias": ["nodejs", "typeScript"],
+              "cantidad": 2
+            },
+            {
+              "rol": "Diseñador",
+              "mainTecnologias": ["figma"],
+              "cantidad": 2
+            }
+          ]
+        }
+      },
+      {
+        "idProgram2": {
+          "tamanoMaximoIntegrantes": 7,
+          "cantidadMaximaEquipos": 18,
+          "perfilesPorEquipoC#": [
+            {
+              "rol": "Desarrollador BackEnd",
+              "mainTecnologias": ["c#", ".Net"],
+              "cantidad": 3
+            },
+            {
+              "rol": "Analista QA",
+              "mainTecnologias": ["c#", ".Net"],
+              "cantidad": 2
+            },
+            {
+              "rol": "Diseñador",
+              "mainTecnologias": ["figma"],
+              "cantidad": 2
+            }
+          ],
+          "perfilesPorEquipoNodeJs": [
+            {
+              "rol": "Desarrollador BackEnd",
+              "mainTecnologias": ["nodejs", "typeScript"],
+              "cantidad": 3
+            },
+            {
+              "rol": "Analista QA",
+              "mainTecnologias": ["nodejs", "typeScript"],
+              "cantidad": 2
+            },
+            {
+              "rol": "Diseñador",
+              "mainTecnologias": ["figma"],
+              "cantidad": 2
+            }
+          ]
+        }
+      }
+    ]
+  }
+  

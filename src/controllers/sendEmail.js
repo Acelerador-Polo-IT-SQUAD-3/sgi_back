@@ -1,31 +1,34 @@
 import emailModule from '../email.js';
 import dotenv from 'dotenv';
 dotenv.config();
-const { transporter, templateRegister, templateEnrollment } = emailModule;
 
-export async function sendEmail(toRecipient, emailSubject, templateName, templateData) {
+const { transporter, templateRegister, templatePersonalized, templateEnrollment } = emailModule;
+
+export async function sendEmail(toRecipient, emailSubject, templateName, templateData, fromReception = process.env.MAIL_ADMIN) {
   try {
     let emailBody = '';
     switch (templateName) {
       case 'register':
         emailBody = templateRegister();
         break;
+      case 'personalized':
+        emailBody = templatePersonalized(templateData);
+        break;
       case 'enrollment':
-        emailBody = templateEnrollment(templateData.fullname);
+        emailBody = templateEnrollment();
         break;
       default:
         throw new Error('Plantilla no encontrada');
     }
 
     const mailOptions = {
-      from: process.env.MAIL_ADMIN,
+      from: templateName === 'personalized' ? fromReception : process.env.MAIL_ADMIN ,
       to: toRecipient,
       subject: emailSubject,
       html: emailBody,
     };
-    console.log('Antes del transportesr')
+
     await transporter.sendMail(mailOptions);
-    console.log('Despues del transportesr')
   } catch (error) {
     throw new Error(`Error al enviar el correo: ${error.message}`);
   }
