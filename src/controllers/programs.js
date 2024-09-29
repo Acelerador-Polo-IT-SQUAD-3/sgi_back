@@ -15,7 +15,7 @@ export const getItems = async (req, res) => {
 
 export const getItem = async (req, res) => {
     // Lógica para obtener un elemento
-    //requiere id del programa
+    //requiere id del programa esto se envia por url
     //devuelve un programa
     try {
         const { id } = req.params;
