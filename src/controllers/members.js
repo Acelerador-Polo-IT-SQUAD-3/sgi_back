@@ -2,6 +2,7 @@ import {pool} from '../database.js'
 
 export const createItem = async(req, res) => {
     // Lógica para crear un nuevo elemento
+    //requiere id del equipo e id del usuario datos que se envian por el bodi
 
     try {
         console.log('Datos recibidos en req.body:', req.body);
