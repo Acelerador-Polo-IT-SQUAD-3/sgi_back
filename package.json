@@ -17,6 +17,8 @@
     "express": "^4.19.2",
     "express-validator": "^7.2.0",
     "mysql2": "^3.11.0",
-    "nodemon": "^3.1.4"
+    "nodemon": "^3.1.4",
+    "numero-a-letras": "^1.0.6",
+    "to-words": "^4.1.0"
   }
 }
