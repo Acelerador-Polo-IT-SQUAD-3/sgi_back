@@ -1,17 +1,19 @@
 import {pool} from '../database.js'
 import {encrypt, compare} from '../helpers/handleBcrypt.js'
-
+import {sendEmail} from './sendEmail.js'
 
 export const createItem = async(req, res) => {
     // Lógica para crear un nuevo elemento
-    //requiere nombre, apellido, dni, descripcion, email, id de rol y contraseña datos que se envian por el bodi
+    //requiere nombre, apellido, dni, descripcion, email, id de rol y contraseña datos que se envian por el body
 
     try {
         console.log('Datos recibidos en req.body:', req.body);
-        const { name, surname, dni, description, email, password, role_id } = req.body;
+        const { name, surname, dni, description, email, password } = req.body;
         const encryptedPassword = await encrypt(password);
         const fecha = new Date();
+        const role_id = req.body.role_id || 1;//Quitar
         const [result] = await pool.query('INSERT INTO users (name, surname, dni, description, email, password,role_id, created_at, updated_at,state_id ) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, 1)', [name, surname, dni, description, email, encryptedPassword, role_id, fecha, fecha]);
+        await sendEmail(email, 'Bienvenido a Nuestro Sitio', 'register');
         res.json({ id: result.insertId, name, email });
     } catch (error) {
         console.error(error);
@@ -22,7 +24,7 @@ export const createItem = async(req, res) => {
 
 export const login = async (req, res) => {
     // Lógica para comparar un elemento
-    //requiere email y contraseña datos que se envian por el bodi
+     //requiere email y contraseña datos que se envian por el bodi
     try {
         const { email, password } = req.body;
         const [result] = await pool.query('SELECT id,name,surname,dni,description,email,role_id FROM users WHERE email = ?', [email]);
