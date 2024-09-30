@@ -1,6 +1,7 @@
 import {pool} from '../database.js'
 import {encrypt, compare} from '../helpers/handleBcrypt.js'
-
+import {createItem} from './teams.js'
+import {massCreateItem, createMentor} from'../controllers/members.js';
 
 export const getItems = async (req, res) => {
     try {
@@ -72,6 +73,8 @@ export const getItem = async (req, res) => {
     }
 };
 
+
+
 export const updateItem = async(req, res) => {
     // Lógica para actualizar un elemento por id esto se envia por url
     //requiere nombre, apellido, dni, descripcion, email datos que se envian por el bodi
@@ -111,54 +114,85 @@ export const deleteItem = async (req, res) => {
 };
 
 
-export const getUsersByTechnology = async (req, res) => {
+export const asignacionEquipo = async (id, cant_max_equipos, conocimientos_por_equipo, conocimientos_por_mentor) => {
     try {
-        const { technologyIds } = req.body;
+        const idsTecnologias = conocimientos_por_equipo.ids_tecnologias;
+        const cantidadRequerida = conocimientos_por_equipo.cantidad_requerida;
 
-        // Verificar que technologyIds sea un array no vacío
-        if (!Array.isArray(technologyIds) || technologyIds.length === 0) {
-            return res.status(400).json({ message: 'Debe proporcionar una lista de tecnologías válida.' });
+        // Verificaciones iniciales
+        if (cantidadRequerida.length !== idsTecnologias.length) {
+            return { success: false, message: 'Los arrays de tecnologías y cantidades no coinciden en tamaño.' };
         }
 
-        // Convertir los IDs de tecnologías a una cadena separada por comas
-        const techList = technologyIds.join(',');
+        const checkProgramSql = 'SELECT COUNT(*) as count FROM programs WHERE id = ?';
+        const [programCheck] = await pool.execute(checkProgramSql, [id]);
 
-        // Consulta SQL con filtro de tecnologías
-        const sql = `
+        if (programCheck[0].count === 0) {
+            return { success: false, message: `El programa con id ${id} no existe.` };
+        }
+
+        if (!Array.isArray(idsTecnologias) || idsTecnologias.length === 0) {
+            return { success: false, message: 'Debe proporcionar una lista de tecnologías válida para graduado.' };
+        }
+
+        if (!Array.isArray(conocimientos_por_mentor) || conocimientos_por_mentor.length === 0) {
+            return { success: false, message: 'Debe proporcionar una lista de tecnologías válida para mentor.' };
+        }
+
+        const techList = idsTecnologias.join(',');
+        const techListM = conocimientos_por_mentor.join(',');
+        const state =1;
+        // Consultas SQL
+        const sqlG = `
             SELECT DISTINCT u.id, u.name, mt.technology_id
             FROM users u
             JOIN managed_technologies mt ON u.id = mt.user_id
-            WHERE u.id NOT IN (
+            WHERE role_id=1 AND u.id NOT IN (
                 SELECT DISTINCT m.user_id
                 FROM members m
                 JOIN teams t ON m.team_id = t.id
-                WHERE t.state_id = 1 AND t.program_id = 4
+                WHERE t.state_id = (${state}) AND t.program_id = ?
             )
             AND mt.technology_id IN (${techList})
         `;
 
-        // Ejecutar la consulta
-        const [rowsRaw] = await pool.execute(sql);
+        const sqlm = `
+            SELECT DISTINCT u.id, u.name, mt.technology_id
+            FROM users u
+            JOIN managed_technologies mt ON u.id = mt.user_id
+            WHERE role_id=2 AND u.id NOT IN (
+                SELECT DISTINCT m.user_id
+                FROM members m
+                JOIN teams t ON m.team_id = t.id
+                WHERE t.state_id = ${state} AND t.program_id = ?
+            )
+            AND mt.technology_id IN (${techListM})
+            LIMIT 1
+        `;
+
+        const [rowsRaw] = await pool.execute(sqlG, [id]);
+        const [Mentor] = await pool.execute(sqlm, [id]);
+
+        // Verificar si se encontró el mentor
+        if (!Mentor || Mentor.length === 0) {
+            return { success: false, message: 'Mentor no encontrado' };
+        }
+
+        console.log("ID del mentor:", Mentor[0].id);
 
         const processResults = (results) => {
-            // Crear un objeto para almacenar usuarios únicos por su ID
             const uniqueUsers = {};
-        
-            // Recorrer los resultados y almacenar en el objeto solo usuarios únicos
             results.forEach(row => {
                 if (!uniqueUsers[row.id]) {
                     uniqueUsers[row.id] = row;
                 }
             });
-        
-            // Convertir el objeto de usuarios únicos a un array
             return Object.values(uniqueUsers);
         };
-        const rows = processResults(rowsRaw);
-        console.log(rows);
 
-        // Filtrar usuarios únicos por ID
+        const rows = processResults(rowsRaw);
         const uniqueUsers = new Map();
+
         rows.forEach(row => {
             if (!uniqueUsers.has(row.id)) {
                 uniqueUsers.set(row.id, { id: row.id, name: row.name, technologies: [] });
@@ -166,25 +200,110 @@ export const getUsersByTechnology = async (req, res) => {
             uniqueUsers.get(row.id).technologies.push(row.technology_id);
         });
 
-        // Separar usuarios en arrays según las tecnologías
         const result = {};
-        technologyIds.forEach(techId => {
+        idsTecnologias.forEach(techId => {
             result[techId] = [];
         });
 
         uniqueUsers.forEach(user => {
             user.technologies.forEach(techId => {
-                if (result[techId]) {
+                if (result[techId] && result[techId].length < cantidadRequerida[idsTecnologias.indexOf(techId)]) {
                     result[techId].push(user);
                 }
             });
         });
 
-        // Enviar la respuesta con el resultado
-        res.json({ success: true, data: result });
+        const notEnoughUsers = idsTecnologias.some((techId, index) => result[techId].length < cantidadRequerida[index]);
+
+        if (notEnoughUsers) {
+            return { success: false, message: 'No se cumplen los requisitos de cantidad de usuarios para una o más tecnologías.' };
+        }
+
+        const userIds = [];
+        Object.values(result).forEach(usersArray => {
+            usersArray.forEach(user => {
+                userIds.push(user.id);
+            });
+        });
+
+        // Crear el equipo y obtener el ID
+        const nuevoEquipoID = await createItem(id);
+        console.log('Nuevo equipo creado:', nuevoEquipoID);
+
+        // Crear una lista de promesas para añadir los usuarios al equipo
+        const promises = userIds.map(userId => {
+            return massCreateItem(userId, nuevoEquipoID)
+                .then(nuevoMiembro => {
+                    console.log('Nuevo miembro creado:', nuevoMiembro);
+                    return nuevoMiembro;
+                })
+                .catch(error => {
+                    console.error('Error al crear el miembro:', error);
+                    throw error;
+                });
+        });
+
+        // Asignar el mentor al equipo
+        const { status: mentorStatus, resultM } = await createMentor(nuevoEquipoID, Mentor[0].id);
+        if (mentorStatus === 401||mentorStatus === 500) {
+            return { success: false, message: resultM };
+        }
+        
+
+
+        const sqlSM = 
+            `SELECT id,name,surname,dni,description,email,role_id FROM users WHERE id = ${id} and state_id = 1`;
+
+        const [rowsSM] = await pool.execute(sqlSM, [id]);
+        const mentorCreado = Mentor[0];
+        console.log("MENTOR CREADO:", JSON.stringify(mentorCreado, null, 2));
+        await Promise.all(promises);
+
+        return { success: true, nuevoEquipoID, result,mentorCreado };
+
     } catch (error) {
         console.error('Error al obtener usuarios por tecnología:', error);
-        res.status(500).json({ message: 'Error al obtener usuarios por tecnología' });
+        return { success: false, message: 'Error al obtener usuarios por tecnología' };
+    }
+};
+
+
+export const asignacionEquipos = async (req, res) => {
+    const { id, cant_max_equipos, conocimientos_por_equipo, conocimientos_por_mentor } = req.body;
+    let i = 0;
+    const equiposCreados = [];
+    
+    try {
+        while (i < cant_max_equipos) {
+            const { success, nuevoEquipoID, result, mentorCreado, message } = await asignacionEquipo(id, cant_max_equipos, conocimientos_por_equipo, conocimientos_por_mentor);
+            
+            if (!success) {
+                // Si ocurre un error, detenemos el ciclo y enviamos la respuesta.
+                console.error('Error al crear un equipo:', message);
+                if (!res.headersSent) {
+                    return res.status(400).json({ message: 'Error durante la asignación de equipos: ' + message, equiposCreados });
+                }
+            }
+            
+            equiposCreados.push({ equipo: nuevoEquipoID, usuarios_asignados: result, mentor_asignado: mentorCreado });
+            console.log('Nuevo equipo creado:', nuevoEquipoID);
+            i++;
+        }
+
+        // Solo se envía una respuesta si no se ha enviado otra antes.
+        if (!res.headersSent) {
+            return res.json({ 
+                success: true, 
+                program: id,
+                equipos_creados: equiposCreados 
+            });
+        }
+
+    } catch (error) {
+        console.error('Error en el proceso de asignación de equipos:', error);
+        if (!res.headersSent) {
+            return res.status(500).json({ message: 'Error en el proceso de asignación de equipos.' });
+        }
     }
 };
 
@@ -192,4 +311,7 @@ export const getUsersByTechnology = async (req, res) => {
 
 
 
-export default { getItems, getItem, updateItem, deleteItem, getUsersByTechnology };
+
+
+
+export default { getItems, getItem, updateItem, deleteItem, asignacionEquipos };

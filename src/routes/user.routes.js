@@ -1,6 +1,6 @@
 import { Router } from "express";
 const router = Router()
-import { getItems, getItem, updateItem, deleteItem, getUsersByTechnology } from'../controllers/users.js';
+import { getItems, getItem, updateItem, deleteItem, asignacionEquipos } from'../controllers/users.js';
 import {validateUser} from '../validators/user.js'
 
 
@@ -15,6 +15,6 @@ router.patch(`/:id`, validateUser, updateItem)
 
 router.patch(`/del/:id`, deleteItem)
 
-router.post(`/get/user/tech`, getUsersByTechnology)
+router.post(`/get/user/tech`, asignacionEquipos)
 
 export default router
