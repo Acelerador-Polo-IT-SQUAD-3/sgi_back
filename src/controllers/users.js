@@ -5,50 +5,49 @@ import {massCreateItem, createMentor} from'../controllers/members.js';
 
 export const getItems = async (req, res) => {
     try {
-        // usa role_id, program_id y technology_id para filtrar si se envian nulos se selecciona todo
-        //datos que se envian por el bodi
-        const { role_id, program_id, technology_id } = req.query;
+        const { role_id, program_id, technology_id, team_id } = req.query;
 
-        if (role_id == null && program_id == null && technology_id == null) {
-            // Sin filtros
-            const [result] = await pool.query('SELECT DISTINCT id, name, surname, dni, description, email, role_id FROM users WHERE users.state_id = 1');
-            res.json(result);
+        // Construir la consulta base
+        let query = 'SELECT DISTINCT users.id, users.name, users.surname, users.dni, users.description, users.email, users.role_id FROM users ';
+        let conditions = ['users.state_id = 1'];
+        let params = [];
+
+        // Añadir joins y condiciones según los filtros proporcionados
+        if (program_id) {
+            query += 'INNER JOIN members ON users.id = members.user_id INNER JOIN teams ON members.team_id = teams.id INNER JOIN programs ON teams.program_id = programs.id ';
+            conditions.push('programs.id = ?');
+            params.push(program_id);
+            if (team_id) {
+                conditions.push('teams.id = ?');
+                params.push(team_id);
+            }
         }
-        else if (role_id != null && program_id == null && technology_id == null) {
-            // Un filtro: rol
-            const [result] = await pool.query('SELECT DISTINCT id, name, surname, dni, description, email, role_id FROM users WHERE role_id = ? and users.state_id = 1', [role_id]);
-            res.json(result);
+        
+        if (technology_id) {
+            query += 'INNER JOIN managed_technologies ON users.id = managed_technologies.user_id INNER JOIN technologies ON managed_technologies.technology_id = technologies.id ';
+            conditions.push('technologies.id = ?');
+            params.push(technology_id);
         }
-        else if (role_id == null && program_id != null && technology_id == null) {
-            // Un filtro: programa
-            const [result] = await pool.query('SELECT DISTINCT users.id, users.name, users.surname, users.dni, users.description, users.email, users.role_id FROM users INNER JOIN members ON users.id = members.user_id INNER JOIN teams ON members.team_id = teams.id INNER JOIN programs ON teams.program_id = programs.id WHERE programs.id = ? and users.state_id = 1', [program_id]);
-            res.json(result);
+
+        if (!program_id&&team_id) {
+            query += 'INNER JOIN members ON users.id = members.user_id INNER JOIN teams ON members.team_id = teams.id ';
+            conditions.push('teams.id = ?');
+            params.push(team_id);
         }
-        else if (role_id == null && program_id == null && technology_id != null) {
-            // Un filtro: tecnología
-            const [result] = await pool.query('SELECT DISTINCT users.id, users.name, users.surname, users.dni, users.description, users.email, users.role_id FROM users INNER JOIN managed_technologies ON users.id = managed_technologies.user_id INNER JOIN technologies ON managed_technologies.technology_id = technologies.id WHERE technologies.id = ? and users.state_id = 1', [technology_id]);
-            res.json(result);
+
+        if (role_id) {
+            conditions.push('users.role_id = ?');
+            params.push(role_id);
         }
-        else if (role_id != null && program_id != null && technology_id == null) {
-            // Dos filtros: rol y programa
-            const [result] = await pool.query('SELECT DISTINCT users.id, users.name, users.surname, users.dni, users.description, users.email, users.role_id FROM users INNER JOIN members ON users.id = members.user_id INNER JOIN teams ON members.team_id = teams.id INNER JOIN programs ON teams.program_id = programs.id WHERE programs.id = ? AND users.role_id = ? and users.state_id = 1', [program_id, role_id]);
-            res.json(result);
+
+        // Combinar todas las condiciones con "AND"
+        if (conditions.length > 0) {
+            query += 'WHERE ' + conditions.join(' AND ');
         }
-        else if (role_id != null && program_id == null && technology_id != null) {
-            // Dos filtros: rol y tecnología
-            const [result] = await pool.query('SELECT DISTINCT users.id, users.name, users.surname, users.dni, users.description, users.email, users.role_id FROM users INNER JOIN managed_technologies ON users.id = managed_technologies.user_id INNER JOIN technologies ON managed_technologies.technology_id = technologies.id WHERE technologies.id = ? AND users.role_id = ? and users.state_id = 1', [technology_id, role_id]);
-            res.json(result);
-        }
-        else if (role_id == null && program_id != null && technology_id != null) {
-            // Dos filtros: programa y tecnología
-            const [result] = await pool.query('SELECT DISTINCT users.id, users.name, users.surname, users.dni, users.description, users.email, users.role_id FROM users INNER JOIN members ON users.id = members.user_id INNER JOIN teams ON members.team_id = teams.id INNER JOIN programs ON teams.program_id = programs.id INNER JOIN managed_technologies ON users.id = managed_technologies.user_id INNER JOIN technologies ON managed_technologies.technology_id = technologies.id WHERE programs.id = ? AND technologies.id = ? and users.state_id = 1', [program_id, technology_id]);
-            res.json(result);
-        }
-        else if (role_id != null && program_id != null && technology_id != null) {
-            // Tres filtros: rol, programa y tecnología
-            const [result] = await pool.query('SELECT DISTINCT users.id, users.name, users.surname, users.dni, users.description, users.email, users.role_id FROM users INNER JOIN members ON users.id = members.user_id INNER JOIN teams ON members.team_id = teams.id INNER JOIN programs ON teams.program_id = programs.id INNER JOIN managed_technologies ON users.id = managed_technologies.user_id INNER JOIN technologies ON managed_technologies.technology_id = technologies.id WHERE programs.id = ? AND users.role_id = ? AND technologies.id = ? and users.state_id = 1', [program_id, role_id, technology_id]);
-            res.json(result);
-        }
+
+        // Ejecutar la consulta
+        const [result] = await pool.query(query, params);
+        res.json(result);
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Error al obtener los usuarios' });
