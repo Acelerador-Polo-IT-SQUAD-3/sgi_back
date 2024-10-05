@@ -226,7 +226,7 @@ export const asignacionEquipo = async (id, cant_max_equipos, conocimientos_por_e
         });
 
         // Crear el equipo y obtener el ID
-        const nuevoEquipoID = await createItem(id);
+        const [nuevoEquipoID,nuevoEquipoNombre] = await createItem(id);
         console.log('Nuevo equipo creado:', nuevoEquipoID);
 
         // Crear una lista de promesas para añadir los usuarios al equipo
@@ -258,7 +258,7 @@ export const asignacionEquipo = async (id, cant_max_equipos, conocimientos_por_e
         console.log("MENTOR CREADO:", JSON.stringify(mentorCreado, null, 2));
         await Promise.all(promises);
 
-        return { success: true, nuevoEquipoID, result,mentorCreado };
+        return { success: true, nuevoEquipoID, result,mentorCreado,nuevoEquipoNombre };
 
     } catch (error) {
         console.error('Error al obtener usuarios por tecnología:', error);
@@ -274,7 +274,7 @@ export const asignacionEquipos = async (req, res) => {
     
     try {
         while (i < cant_max_equipos) {
-            const { success, nuevoEquipoID, result, mentorCreado, message } = await asignacionEquipo(id, cant_max_equipos, conocimientos_por_equipo, conocimientos_por_mentor);
+            const { success, nuevoEquipoID, result, mentorCreado, message , nuevoEquipoNombre} = await asignacionEquipo(id, cant_max_equipos, conocimientos_por_equipo, conocimientos_por_mentor);
             
             if (!success) {
                 // Si ocurre un error, detenemos el ciclo y enviamos la respuesta.
@@ -284,7 +284,7 @@ export const asignacionEquipos = async (req, res) => {
                 }
             }
             
-            equiposCreados.push({ equipo: nuevoEquipoID, usuarios_asignados: result, mentor_asignado: mentorCreado });
+            equiposCreados.push({ equipo: nuevoEquipoNombre, ID: nuevoEquipoID, usuarios_asignados: result, mentor_asignado: mentorCreado });
             console.log('Nuevo equipo creado:', nuevoEquipoID);
             i++;
         }
