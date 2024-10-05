@@ -16,19 +16,22 @@ export const createItem = async (program_id) => {
         const programaName = resultNameProgram.length > 0 ? resultNameProgram[0].name : 'Unknown';
         const prefijo = '-team ';
         const nombreEquipo = programaName + prefijo + nuevoEquipo;
+        const descripcion = nombreEquipo + "-programa:" + programaName
 
         // Insertar el nuevo equipo en la base de datos
         const [insertResult] = await pool.query(
-            'INSERT INTO teams (name, program_id, state_id,created_at, updated_at) VALUES (?, ?, ?, ?, ?)', 
-            [nombreEquipo, program_id, 1, fecha, fecha]
+            'INSERT INTO teams (name, program_id, state_id,created_at, updated_at, description) VALUES (?, ?, ?, ?, ?, ?)', 
+            [nombreEquipo, program_id, 1, fecha, fecha, descripcion]
         );
         
         // Obtener el ID del nuevo equipo
         const newTeamId = insertResult.insertId;
+        const newTeamName = nombreEquipo;
         console.log('ID del nuevo equipo:', newTeamId);
         
         // Retornar el ID del nuevo equipo
-        return newTeamId;
+        return [newTeamId, newTeamName];
+
     } catch (error) {
         console.error('Error al crear el equipo:', error);
         throw new Error('Error al crear el equipo');
