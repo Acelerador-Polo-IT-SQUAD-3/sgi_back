@@ -61,7 +61,8 @@ export const getItem = async (req, res) => {
 export const getItems = async (req, res) => {
     // Lógica para obtener todos los elementos
     try {
-        const [result] = await pool.query('SELECT id,name, description FROM teams');
+        const state =1;
+        const [result] = await pool.query(`SELECT id,name, description FROM teams WHERE teams.state_id = (${state})`);
         res.json(result);
     } catch (error) {
         console.error(error);
