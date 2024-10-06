@@ -69,6 +69,25 @@ export const getItems = async (req, res) => {
     }
 };
 
+export const getUserItems = async (req, res) => {
+    // Lógica para obtener todos los elementos de un usuario
+    try {
+        const { id } = req.params;
+        const [members] = await pool.query('SELECT id, team_id, user_id FROM members WHERE user_id = ?', [id]);
 
+        if (members.length === 0) {
+            return res.json([]);
+        }
 
-export default { createItem, getItems, getItem };
+        const teamIds = members.map(member => member.team_id);
+
+        const [teams] = await pool.query('SELECT id, name, description FROM teams WHERE id IN (?)', [teamIds]);
+
+        res.json(teams);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error al obtener los grupos del usuario' });
+    }
+};
+
+export default { createItem, getItems, getItem, getUserItems };

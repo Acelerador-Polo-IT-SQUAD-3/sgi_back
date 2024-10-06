@@ -6,6 +6,7 @@ import ProgramsRoutes from './routes/programs.routes.js';
 import RolesRoutes from './routes/roles.routes.js';
 import technologiesRoutes from './routes/technologies.routes.js';
 import menusRoutes from './routes/menus.routes.js';
+import teamsRoutes from './routes/teams.routes.js';
 import cors from 'cors';
 import dotenv from 'dotenv';
 
@@ -33,6 +34,7 @@ app.use('/prog', ProgramsRoutes);
 app.use('/roles', RolesRoutes);
 app.use('/tech', technologiesRoutes);
 app.use('/menus', menusRoutes);
+app.use('/teams', teamsRoutes);
 
 
 app.listen(PORT, () => {
