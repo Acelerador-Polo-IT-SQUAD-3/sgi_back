@@ -69,6 +69,40 @@ export const getItems = async (req, res) => {
     }
 };
 
+export const getUserItems = async (req, res) => {
+    // Lógica para obtener todos los elementos de un usuario
+    try {
+        const { id } = req.params;
 
+        const [members] = await pool.query('SELECT team_id FROM members WHERE user_id = ?', [id]);
 
-export default { createItem, getItems, getItem };
+        if (members.length === 0) {
+            return res.json([]);
+        }
+
+        const teamIds = members.map(member => member.team_id);
+
+        const [participants] = await pool.query(
+            'SELECT user_id FROM members WHERE team_id IN (?) AND user_id != ?', 
+            [teamIds, id]
+        );
+
+        const userIds = participants.map(participant => participant.user_id);
+        const [userDetails] = await pool.query('SELECT id, name, surname, email, rol_id FROM users WHERE id IN (?)', [userIds]);
+
+        const participantsByProject = {};
+
+        teams.forEach(team => {
+            const teamParticipants = participants.filter(participant => participant.team_id === team.team_id);
+            const userIds = teamParticipants.map(participant => participant.user_id);
+            participantsByProject[team.project_id] = userIds;
+        });
+
+        res.json(participantsByProject);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error al obtener los grupos del usuario' });
+    }
+};
+
+export default { createItem, getItems, getItem, getUserItems };
