@@ -1,7 +1,7 @@
 # sgi_back
 
 # INSTALACION DEL PROYECTO
-git clone 
+git clone https://github.com/Acelerador-Polo-IT-SQUAD-3/sgi_back.git
 cd sgi_back
 npm install
 
