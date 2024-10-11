@@ -23,7 +23,7 @@ export async function sendEmail(toRecipient, emailSubject, templateName, templat
 
     const mailOptions = {
       from: templateName === 'personalized' ? fromReception : process.env.MAIL_ADMIN ,
-      to: templateName === 'personalized' ? toRecipient.join(', ') : toRecipient,
+      to: toRecipient,
       subject: emailSubject,
       html: emailBody,
     };
