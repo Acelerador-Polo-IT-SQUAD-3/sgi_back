@@ -1,6 +1,6 @@
 import {pool} from '../database.js'
 import { ToWords } from 'to-words';
-
+import {sendEmail} from './sendEmail.js'
 
 export const createItem = async (program_id) => {
     try {
@@ -73,7 +73,6 @@ export const getUserItems = async (req, res) => {
     try {
         const { id } = req.params;
 
-        // Primero, obtenemos el role del usuario que está haciendo la consulta
         const [userRole] = await pool.query(`
             SELECT role_id FROM users WHERE id = ?
         `, [id]);
@@ -84,7 +83,6 @@ export const getUserItems = async (req, res) => {
 
         const roleId = userRole[0].role_id;
 
-        // Ahora construimos la consulta en base al role del usuario
         let query;
         if (roleId === 1) {
             query = `
@@ -146,18 +144,21 @@ export const getUserItems = async (req, res) => {
 
 
 export const sendEmailForUsers = async (req, res) => {
-    // Lógica para enviar un email personalizado
     try {
         const { affair, message, selectedOptions, fromReception } = req.body;
+
+        if (!affair || !message || !selectedOptions) {
+            return res.status(400).json({ enviado: false, error: 'Faltan datos requeridos' });
+        }
 
         const toRecipient = Array.isArray(selectedOptions) ? selectedOptions.join(', ') : selectedOptions;
 
         await sendEmail(toRecipient, affair, 'personalized', message, fromReception);
         
-        res.json({ enviado: true });
+        res.json({ enviado: true, mensaje: 'Email enviado correctamente' });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Error al enviar el email' });
+        res.status(500).json({ enviado: false, error: 'Error al enviar el email' });
     }
 };
 
