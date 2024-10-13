@@ -1,6 +1,6 @@
 import {pool} from '../database.js'
 import { ToWords } from 'to-words';
-
+import {sendEmail} from './sendEmail.js'
 
 export const createItem = async (program_id) => {
     try {
@@ -70,39 +70,96 @@ export const getItems = async (req, res) => {
 };
 
 export const getUserItems = async (req, res) => {
-    // Lógica para obtener todos los elementos de un usuario
     try {
         const { id } = req.params;
 
-        const [members] = await pool.query('SELECT team_id FROM members WHERE user_id = ?', [id]);
+        const [userRole] = await pool.query(`
+            SELECT role_id FROM users WHERE id = ?
+        `, [id]);
 
-        if (members.length === 0) {
+        if (userRole.length === 0) {
+            return res.status(404).json({ message: 'Usuario no encontrado' });
+        }
+
+        const roleId = userRole[0].role_id;
+
+        let query;
+        if (roleId === 1) {
+            query = `
+                SELECT 
+                    u.id AS user_id, 
+                    CONCAT(u.name, ' ', u.surname) AS user_name, 
+                    u.email AS user_email, 
+                    GROUP_CONCAT(t.name SEPARATOR ', ') AS team_names
+                FROM 
+                    members m
+                JOIN 
+                    users u ON m.user_id = u.id
+                JOIN 
+                    teams t ON t.id = m.team_id
+                WHERE 
+                    m.team_id IN (
+                        SELECT m.team_id FROM members m WHERE m.user_id = ?
+                    ) 
+                    AND u.role_id = 1
+                GROUP BY 
+                    u.id, u.name, u.surname, u.email
+            `;
+        } else if (roleId === 2) {
+            query = `
+                SELECT 
+                    u.id AS user_id, 
+                    CONCAT(u.name, ' ', u.surname) AS user_name, 
+                    u.email AS user_email, 
+                    GROUP_CONCAT(t.name SEPARATOR ', ') AS team_names
+                FROM 
+                    members m
+                JOIN 
+                    users u ON m.user_id = u.id
+                JOIN 
+                    teams t ON t.id = m.team_id
+                WHERE 
+                    m.team_id IN (
+                        SELECT m.team_id FROM members m WHERE m.user_id = ?
+                    ) 
+                    AND (u.role_id = 1 OR u.role_id = 2)
+                GROUP BY 
+                    u.id, u.name, u.surname, u.email
+            `;
+        }
+
+        const [userItems] = await pool.query(query, [id]);
+
+        if (userItems.length === 0) {
             return res.json([]);
         }
 
-        const teamIds = members.map(member => member.team_id);
-
-        const [participants] = await pool.query(
-            'SELECT user_id FROM members WHERE team_id IN (?) AND user_id != ?', 
-            [teamIds, id]
-        );
-
-        const userIds = participants.map(participant => participant.user_id);
-        const [userDetails] = await pool.query('SELECT id, name, surname, email, rol_id FROM users WHERE id IN (?)', [userIds]);
-
-        const participantsByProject = {};
-
-        teams.forEach(team => {
-            const teamParticipants = participants.filter(participant => participant.team_id === team.team_id);
-            const userIds = teamParticipants.map(participant => participant.user_id);
-            participantsByProject[team.project_id] = userIds;
-        });
-
-        res.json(participantsByProject);
+        res.json(userItems);
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Error al obtener los grupos del usuario' });
     }
 };
 
-export default { createItem, getItems, getItem, getUserItems };
+
+
+export const sendEmailForUsers = async (req, res) => {
+    try {
+        const { affair, message, selectedOptions, fromReception } = req.body;
+
+        if (!affair || !message || !selectedOptions) {
+            return res.status(400).json({ enviado: false, error: 'Faltan datos requeridos' });
+        }
+
+        const toRecipient = Array.isArray(selectedOptions) ? selectedOptions.join(', ') : selectedOptions;
+
+        await sendEmail(toRecipient, affair, 'personalized', message, fromReception);
+        
+        res.json({ enviado: true, mensaje: 'Email enviado correctamente' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ enviado: false, error: 'Error al enviar el email' });
+    }
+};
+
+export default { createItem, getItems, getItem, getUserItems, sendEmailForUsers };

@@ -13,7 +13,7 @@ export const createItem = async(req, res) => {
         const fecha = new Date();
         const role_id = req.body.role_id || 1;//Quitar
         const [result] = await pool.query('INSERT INTO users (name, surname, dni, description, email, password,role_id, created_at, updated_at,state_id ) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, 1)', [name, surname, dni, description, email, encryptedPassword, role_id, fecha, fecha]);
-        await sendEmail(email, 'Bienvenido a Nuestro Sitio', 'register');
+        await sendEmail(email, 'Bienvenido a Nuestro Sitio', 'register','');
         res.json({ id: result.insertId, name, email });
     } catch (error) {
         console.error(error);
