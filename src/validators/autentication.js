@@ -1,7 +1,6 @@
 import {check} from 'express-validator'
 import {validateResult, verificarLargo} from '../helpers/validateHelper.js'
 
-
 export const validateCreate = [
     check('name')
         .exists()
