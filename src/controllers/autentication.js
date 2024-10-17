@@ -27,7 +27,7 @@ export const login = async (req, res) => {
      //requiere email y contraseña datos que se envian por el bodi
     try {
         const { email, password } = req.body;
-        const [result] = await pool.query('SELECT id,name,surname,dni,description,email,role_id FROM users WHERE email = ?', [email]);
+        const [result] = await pool.query('SELECT u.id, u.name, u.surname, u.dni, u.description, u.email, u.role_id, r.name as role_name FROM users u, roles r WHERE email = ? and u.role_id = r.id', [email]);
 
         if (result.length === 0) {
             console.log("Usuario no encontrado");
