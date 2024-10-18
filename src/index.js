@@ -35,6 +35,7 @@ app.use('/roles', RolesRoutes);
 app.use('/tech', technologiesRoutes);
 app.use('/menus', menusRoutes);
 app.use('/teams', teamsRoutes);
+app.use('/orgs', teamsRoutes);
 
 
 app.listen(PORT, () => {

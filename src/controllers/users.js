@@ -80,11 +80,12 @@ export const updateItem = async(req, res) => {
 
     try {
         console.log('Datos recibidos en req.body:', req.body);
-        const { name, surname, dni, description, email } = req.body;
-
+        const { name, surname, dni, description, email, organization_id, role_id  } = req.body;
+        const orgId = organization_id || 1;
+        const roleId = role_id || 1;
         const { id } = req.params;
         const fecha = new Date();
-        const [result] = await pool.query('UPDATE users SET name=?, surname=?, dni=?, description=?, email=?,  updated_at=? WHERE id=? and state_id = 1', [name, surname, dni, description, email, fecha, id]);
+        const [result] = await pool.query('UPDATE users SET name=?, surname=?, dni=?, description=?, email=?,  updated_at=?, organization_id=?, role_id=? WHERE id=? and state_id = 1', [name, surname, dni, description, email, fecha, orgId, roleId, id]);
         res.json({ id: result.insertId , id, name, email });
     } catch (error) {
         console.error(error);
