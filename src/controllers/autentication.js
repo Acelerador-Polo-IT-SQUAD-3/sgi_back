@@ -8,11 +8,14 @@ export const createItem = async(req, res) => {
 
     try {
         console.log('Datos recibidos en req.body:', req.body);
-        const { name, surname, dni, description, email, password } = req.body;
+        const { name, surname, dni, description, email, password, organization_id } = req.body;
+        const orgId = organization_id || 1;
+
         const encryptedPassword = await encrypt(password);
         const fecha = new Date();
         const role_id = req.body.role_id || 1;//Quitar
-        const [result] = await pool.query('INSERT INTO users (name, surname, dni, description, email, password,role_id, created_at, updated_at,state_id ) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, 1)', [name, surname, dni, description, email, encryptedPassword, role_id, fecha, fecha]);
+        
+        const [result] = await pool.query('INSERT INTO users (name, surname, dni, description, email, password, role_id, created_at, updated_at, state_id, organization_id ) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)', [name, surname, dni, description, email, encryptedPassword, role_id, fecha, fecha, orgId]);
         await sendEmail(email, 'Bienvenido a Nuestro Sitio', 'register','');
         res.json({ id: result.insertId, name, email });
     } catch (error) {
