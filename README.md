@@ -1,5 +1,10 @@
 # sgi_back
 
+# TECNOLOGÍAS EMPLEADAS
+Node.js
+Express Framework
+mysql
+
 # INSTALACION DEL PROYECTO
 git clone https://github.com/Acelerador-Polo-IT-SQUAD-3/sgi_back.git
 cd sgi_back
