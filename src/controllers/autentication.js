@@ -10,7 +10,7 @@ export const createItem = async(req, res) => {
 
         const encryptedPassword = await encrypt(password);
         const fecha = new Date();
-        const role_id = req.body.role_id || 1; // Puedes quitar esto si ya no es necesario
+        const role_id = req.body.role_id || 1; 
         
         // 1. Inserción en la tabla 'users'
         const [userResult] = await pool.query(
@@ -21,17 +21,23 @@ export const createItem = async(req, res) => {
         const userId = userResult.insertId;
         
         // 2. Insertar las tecnologías relacionadas en 'managed_technologies'
-        await pool.query('INSERT INTO managed_technologies (user_id, technology_id) VALUES(?, ?)', [userId, technologies_ids]);
+        if (Array.isArray(technologies_ids)) {
+            for (const techId of technologies_ids) {
+                await pool.query('INSERT INTO managed_technologies (user_id, technology_id) VALUES(?, ?)', [userId, techId]);
+            }
+        }
   
-         await sendEmail(email, 'Bienvenido a Nuestro Sitio', 'register','');
+        // 3. Enviar correo de confirmación
+        await sendEmail(email, 'Bienvenido a Nuestro Sitio', 'register','');
         
-        // 3. Responder con los datos correctos
+        // 4. Responder con los datos correctos
         res.json({ id: userId, name, email });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Error al crear el usuario' });
     }
 };
+
 
 
 
