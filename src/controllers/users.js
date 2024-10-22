@@ -76,74 +76,41 @@ export const getItem = async (req, res) => {
 
 
 
-export const updateItem = async(req, res) => {
+export const updateItem = async (req, res) => {
     try {
         console.log('Datos recibidos en req.body:', req.body);
+        const { name, surname, dni, description, email, organization_id, role_id, technologies_ids } = req.body;
+        const orgId = organization_id || 1;
+        const roleId = role_id || 1;
+        const { id } = req.params;  // ID del usuario para actualizar
+        const fecha = new Date();
         
-        // Obtener los parámetros del cuerpo de la solicitud
-        const { name, surname, dni, description, email, program_id } = req.body;
-        const { id } = req.params; // Se espera que el id venga en la URL
-        
-        // Validar si se recibieron datos suficientes
-        if (!id) {
-            return res.status(400).json({ message: 'ID del usuario es requerido' });
-        }
+        // 1. Eliminar las tecnologías actuales relacionadas con el usuario
+        await pool.query(
+            'DELETE managed_technologies FROM managed_technologies INNER JOIN users ON users.id = managed_technologies.user_id WHERE users.id = ?',
+            [id]
+        );
 
-        // Crear la base de la consulta SQL
-        let query = 'UPDATE users SET ';
-        let updates = [];
-        let params = [];
-        
-        // Agregar los campos a actualizar si están presentes en req.body
-        if (name) {
-            updates.push('name = ?');
-            params.push(name);
-        }
-        if (surname) {
-            updates.push('surname = ?');
-            params.push(surname);
-        }
-        if (dni) {
-            updates.push('dni = ?');
-            params.push(dni);
-        }
-        if (description) {
-            updates.push('description = ?');
-            params.push(description);
-        }
-        if (email) {
-            updates.push('email = ?');
-            params.push(email);
-        }
-        if (program_id) {
-            updates.push('program_id = ?');
-            params.push(program_id);
-        }
+        // 2. Actualizar los datos del usuario en la tabla 'users'
+        await pool.query(
+            'UPDATE users SET name=?, surname=?, dni=?, description=?, email=?, updated_at=?, organization_id=?, role_id=? WHERE id=? AND state_id = 1', 
+            [name, surname, dni, description, email, fecha, orgId, roleId, id]
+        );
 
-        // Verificar si hay algún campo a actualizar
-        if (updates.length === 0) {
-            return res.status(400).json({ message: 'No se proporcionaron datos para actualizar' });
+        // 3. Insertar las nuevas tecnologías en 'managed_technologies'
+        if (Array.isArray(technologies_ids)) {
+            for (const techId of technologies_ids) {
+                await pool.query('INSERT INTO managed_technologies (user_id, technology_id) VALUES(?, ?)', [id, techId]);
+            }
         }
-
-        // Construir la consulta final
-        query += updates.join(', ') + ' WHERE id = ? AND state_id = 1';
-        params.push(id); // Añadir el ID del usuario al final de los parámetros
-
-        // Ejecutar la consulta
-        const [result] = await pool.query(query, params);
-
-        if (result.affectedRows === 0) {
-            return res.status(404).json({ message: 'Usuario no encontrado o ya inactivo' });
-        }
-
-        // Responder con éxito
-        res.json({ message: 'Usuario actualizado correctamente', result });
-
+       
+        res.json({ message: `Usuario con ID ${id} actualizado correctamente.` });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Error al actualizar el usuario' });
     }
 };
+
 
 
 
