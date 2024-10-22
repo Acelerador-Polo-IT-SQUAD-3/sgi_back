@@ -9,9 +9,10 @@ export const getItems = async (req, res) => {
         const { role_id, program_id, technology_id, team_id } = req.query;
 
         // Construir la consulta base
-        let query = 'SELECT DISTINCT users.id, users.name, users.surname, users.dni, users.description, users.email, users.role_id FROM users ';
+        let query = 'SELECT DISTINCT users.id, users.name, users.surname, users.dni, users.description, users.email, users.role_id, o.name company FROM users ';
         let conditions = ['users.state_id = 1'];
         let params = [];
+        query += 'INNER JOIN organizations o ON users.organization_id = o.id ';
 
         // Añadir joins y condiciones según los filtros proporcionados
         if (program_id) {
