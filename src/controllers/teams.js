@@ -1,6 +1,8 @@
 import {pool} from '../database.js'
 import { ToWords } from 'to-words';
 import {sendEmail} from './sendEmail.js'
+import dotenv from 'dotenv';
+dotenv.config();
 
 export const createItem = async (program_id) => {
     try {
@@ -141,8 +143,6 @@ export const getUserItems = async (req, res) => {
     }
 };
 
-
-
 export const sendEmailForUsers = async (req, res) => {
     try {
         const { affair, message, selectedOptions, fromReception } = req.body;
@@ -151,7 +151,17 @@ export const sendEmailForUsers = async (req, res) => {
             return res.status(400).json({ enviado: false, error: 'Faltan datos requeridos' });
         }
 
-        const toRecipient = Array.isArray(selectedOptions) ? selectedOptions.join(', ') : selectedOptions;
+        //const toRecipient = Array.isArray(selectedOptions) ? selectedOptions.join(', ') : selectedOptions;
+        /*INICIO ADD EMAIL DEFECT*/
+        const defaultEmail = process.env.MAIL_ADMIN;
+        const recipients = Array.isArray(selectedOptions) ? selectedOptions : [selectedOptions];
+
+        if (!recipients.includes(defaultEmail)) {
+            recipients.push(defaultEmail);
+        }
+
+        const toRecipient = recipients.join(', '); 
+        /*FIN ADD EMAIL DEFECT*/
 
         await sendEmail(toRecipient, affair, 'personalized', message, fromReception);
         

@@ -113,7 +113,7 @@ const templatePersonalized =(templateData)=>`<td class="esd-structure es-p40t es
                         <tbody>
                             <tr>
                                 <td align="left" class="esd-block-text">
-                                    <h1 style="text-align: center;"><b>¡Tienes un mensaje desarrollador en PoloIT!</b></h1>
+                                    <h1 style="text-align: center;"><b>¡Tienes un mensaje desarrollado en PoloIT! </b></h1>
                                 </td>
                             </tr>
                             <tr>
