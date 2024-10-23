@@ -9,10 +9,11 @@ export const getItems = async (req, res) => {
         const { role_id, program_id, technology_id, team_id } = req.query;
 
         // Construir la consulta base
-        let query = 'SELECT DISTINCT users.id, users.name, users.surname, users.dni, users.description, users.email, users.role_id, o.name company FROM users ';
+        let query = `SELECT DISTINCT users.id, users.name, users.surname, users.dni, users.description, users.email, users.role_id, o.name company, GROUP_CONCAT(mt.technology_id SEPARATOR ', ') AS technologies_ids FROM users `;
         let conditions = ['users.state_id = 1'];
         let params = [];
         query += 'INNER JOIN organizations o ON users.organization_id = o.id ';
+        query += 'LEFT JOIN managed_technologies mt ON users.id = mt.user_id  ';
 
         // Añadir joins y condiciones según los filtros proporcionados
         if (program_id) {
@@ -47,6 +48,8 @@ export const getItems = async (req, res) => {
             query += 'WHERE ' + conditions.join(' AND ');
         }
 
+        query += ' GROUP BY users.id, users.name, users.surname, users.dni, users.description, users.email, users.role_id, o.name';
+
         // Ejecutar la consulta
         const [result] = await pool.query(query, params);
         res.json(result);
@@ -61,7 +64,12 @@ export const getItem = async (req, res) => {
     // Lógica para obtener un elemento
     try {
         const { id } = req.params;
-        const [result] = await pool.query('SELECT id,name,surname,dni,description,email,role_id FROM users WHERE id = ? and state_id = 1', [id]);
+        const [result] = await pool.query(
+            `SELECT u.id, u.name, u.surname, u.dni, u.description, u.email, u.role_id, u.organization_id, GROUP_CONCAT(mt.technology_id SEPARATOR ', ') AS technologies_ids
+                FROM users u
+                LEFT JOIN managed_technologies mt ON u.id = mt.user_id  
+                WHERE u.id = ? and u.state_id = 1
+                GROUP BY u.id, u.name, u.surname, u.dni, u.description, u.email, u.role_id, u.organization_id`, [id]);
 
         if (result.length === 0) {
             return res.status(401).json({ message: 'Usuario no encontrado' });
