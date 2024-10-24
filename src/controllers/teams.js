@@ -103,7 +103,7 @@ export const getUserItems = async (req, res) => {
                     m.team_id IN (
                         SELECT m.team_id FROM members m WHERE m.user_id = ?
                     ) 
-                    AND u.role_id = 1
+                    AND u.role_id = 2
                 GROUP BY 
                     u.id, u.name, u.surname, u.email
             `;
@@ -124,7 +124,7 @@ export const getUserItems = async (req, res) => {
                     m.team_id IN (
                         SELECT m.team_id FROM members m WHERE m.user_id = ?
                     ) 
-                    AND (u.role_id = 1 OR u.role_id = 2)
+                    AND (u.role_id = 1)
                 GROUP BY 
                     u.id, u.name, u.surname, u.email
             `;

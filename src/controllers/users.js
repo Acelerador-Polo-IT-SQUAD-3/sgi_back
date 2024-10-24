@@ -3,15 +3,17 @@ import {encrypt, compare} from '../helpers/handleBcrypt.js'
 import {createItem} from './teams.js'
 import {massCreateItem, createMentor} from'../controllers/members.js';
 
+
 export const getItems = async (req, res) => {
     try {
         const { role_id, program_id, technology_id, team_id } = req.query;
 
         // Construir la consulta base
-        let query = 'SELECT DISTINCT users.id, users.name, users.surname, users.dni, users.description, users.email, users.role_id, o.name company FROM users ';
+        let query = `SELECT DISTINCT users.id, users.name, users.surname, users.dni, users.description, users.email, users.role_id, o.name company, GROUP_CONCAT(mt.technology_id SEPARATOR ', ') AS technologies_ids FROM users `;
         let conditions = ['users.state_id = 1'];
         let params = [];
         query += 'INNER JOIN organizations o ON users.organization_id = o.id ';
+        query += 'LEFT JOIN managed_technologies mt ON users.id = mt.user_id  ';
 
         // Añadir joins y condiciones según los filtros proporcionados
         if (program_id) {
@@ -46,6 +48,8 @@ export const getItems = async (req, res) => {
             query += 'WHERE ' + conditions.join(' AND ');
         }
 
+        query += ' GROUP BY users.id, users.name, users.surname, users.dni, users.description, users.email, users.role_id, o.name';
+
         // Ejecutar la consulta
         const [result] = await pool.query(query, params);
         res.json(result);
@@ -60,7 +64,12 @@ export const getItem = async (req, res) => {
     // Lógica para obtener un elemento
     try {
         const { id } = req.params;
-        const [result] = await pool.query('SELECT id,name,surname,dni,description,email,role_id FROM users WHERE id = ? and state_id = 1', [id]);
+        const [result] = await pool.query(
+            `SELECT u.id, u.name, u.surname, u.dni, u.description, u.email, u.role_id, u.organization_id, GROUP_CONCAT(mt.technology_id SEPARATOR ', ') AS technologies_ids
+                FROM users u
+                LEFT JOIN managed_technologies mt ON u.id = mt.user_id  
+                WHERE u.id = ? and u.state_id = 1
+                GROUP BY u.id, u.name, u.surname, u.dni, u.description, u.email, u.role_id, u.organization_id`, [id]);
 
         if (result.length === 0) {
             return res.status(401).json({ message: 'Usuario no encontrado' });
@@ -75,25 +84,42 @@ export const getItem = async (req, res) => {
 
 
 
-export const updateItem = async(req, res) => {
-    // Lógica para actualizar un elemento por id esto se envia por url
-    //requiere nombre, apellido, dni, descripcion, email datos que se envian por el bodi
-
+export const updateItem = async (req, res) => {
     try {
         console.log('Datos recibidos en req.body:', req.body);
-        const { name, surname, dni, description, email, organization_id, role_id  } = req.body;
+        const { name, surname, dni, description, email, organization_id, role_id, technologies_ids } = req.body;
         const orgId = organization_id || 1;
         const roleId = role_id || 1;
-        const { id } = req.params;
+        const { id } = req.params;  // ID del usuario para actualizar
         const fecha = new Date();
-        const [result] = await pool.query('UPDATE users SET name=?, surname=?, dni=?, description=?, email=?,  updated_at=?, organization_id=?, role_id=? WHERE id=? and state_id = 1', [name, surname, dni, description, email, fecha, orgId, roleId, id]);
-        res.json({ id: result.insertId , id, name, email });
+        
+        // 1. Eliminar las tecnologías actuales relacionadas con el usuario
+        await pool.query(
+            'DELETE managed_technologies FROM managed_technologies INNER JOIN users ON users.id = managed_technologies.user_id WHERE users.id = ?',
+            [id]
+        );
+
+        // 2. Actualizar los datos del usuario en la tabla 'users'
+        await pool.query(
+            'UPDATE users SET name=?, surname=?, dni=?, description=?, email=?, updated_at=?, organization_id=?, role_id=? WHERE id=? AND state_id = 1', 
+            [name, surname, dni, description, email, fecha, orgId, roleId, id]
+        );
+
+        // 3. Insertar las nuevas tecnologías en 'managed_technologies'
+        if (Array.isArray(technologies_ids)) {
+            for (const techId of technologies_ids) {
+                await pool.query('INSERT INTO managed_technologies (user_id, technology_id) VALUES(?, ?)', [id, techId]);
+            }
+        }
+       
+        res.json({ message: `Usuario con ID ${id} actualizado correctamente.` });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Error al actualizar el usuario' });
     }
-
 };
+
+
 
 
 export const deleteItem = async (req, res) => {
