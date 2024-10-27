@@ -170,24 +170,29 @@ export const asignacionEquipo = async (id, cant_max_equipos, conocimientos_por_e
         const techListM = conocimientos_por_mentor.join(',');
         const state =1;
         // Consultas SQL
-        const sqlG = `
+                const sqlG = `
             SELECT DISTINCT u.id, u.name, mt.technology_id
             FROM users u
             JOIN managed_technologies mt ON u.id = mt.user_id
-            WHERE role_id=1 AND u.id NOT IN (
+            WHERE role_id = 1
+            AND u.state_id = ${state}  -- Solo usuarios con el estado especificado
+            AND u.id NOT IN (
                 SELECT DISTINCT m.user_id
                 FROM members m
                 JOIN teams t ON m.team_id = t.id
-                WHERE t.state_id = (${state}) AND t.program_id = ?
+                WHERE t.state_id = ${state} AND t.program_id = ?
             )
             AND mt.technology_id IN (${techList})
         `;
 
-        const sqlm = `
+
+                const sqlm = `
             SELECT DISTINCT u.id, u.name, mt.technology_id
             FROM users u
             JOIN managed_technologies mt ON u.id = mt.user_id
-            WHERE role_id=2 AND u.id NOT IN (
+            WHERE role_id = 2 
+            AND u.state_id = ${state}  -- Solo usuarios con el estado especificado
+            AND u.id NOT IN (
                 SELECT DISTINCT m.user_id
                 FROM members m
                 JOIN teams t ON m.team_id = t.id
@@ -196,6 +201,7 @@ export const asignacionEquipo = async (id, cant_max_equipos, conocimientos_por_e
             AND mt.technology_id IN (${techListM})
             LIMIT 1
         `;
+
 
         const [rowsRaw] = await pool.execute(sqlG, [id]);
         const [Mentor] = await pool.execute(sqlm, [id]);
@@ -313,7 +319,7 @@ export const asignacionEquipos = async (req, res) => {
             }
             
             equiposCreados.push({ equipo: nuevoEquipoNombre, ID: nuevoEquipoID, usuarios_asignados: result, mentor_asignado: mentorCreado });
-            console.log('Nuevo equipo creado:', nuevoEquipoID);
+            console.log('Nuevo equipo creado:', nuevoEquipoID, equiposCreados);
             i++;
         }
 
